@@ -4,7 +4,6 @@
 A simple, lightweight web app to **track your YouTube playlists and video progress**.
 Perfect for staying focused while studying, learning, or managing long playlists.
 
-![App Screenshot](Screenshot%20from%202025-09-09%2020-52-45.png)
 ---
 
 ## ✨ Features
