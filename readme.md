@@ -74,7 +74,7 @@ Perfect for staying focused while studying, learning, or managing long playlists
 
 Here’s how it looks in action:
 
-![Demo Screenshot](Screenshot%20from%202025-09-09%2020-52-45.png)
+![Tracker Screenshot](image/tracker-look.png)
 
 ---
 
