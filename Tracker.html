@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YouTube Playlist Tracker</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="Tracker.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1><i class="fab fa-youtube"></i> YouTube Playlist Tracker</h1>
+        <p>Track your YouTube playlists and video progress</p>
+      </div>
+
+      <div class="content">
+        <div class="sidebar">
+          <div class="playlist-info">
+            <h2><i class="fas fa-chart-bar"></i> Stats</h2>
+            <div class="stats">
+              <div class="stat-box">
+                <div class="number">0</div>
+                <div class="label">Total</div>
+              </div>
+              <div class="stat-box">
+                <div class="number">0</div>
+                <div class="label">Watched</div>
+              </div>
+              <div class="stat-box">
+                <div class="number">0</div>
+                <div class="label">Unwatched</div>
+              </div>
+              <div class="stat-box">
+                <div class="number">0%</div>
+                <div class="label">Completed</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="add-video">
+            <h3><i class="fas fa-plus-circle"></i> Add New Video</h3>
+            <div class="input-group">
+              <label for="video-title">Video Title</label>
+              <input
+                type="text"
+                id="video-title"
+                placeholder="Enter video title"
+              />
+            </div>
+            <div class="input-group">
+              <label for="video-url">YouTube URL</label>
+              <input
+                type="text"
+                id="video-url"
+                placeholder="https://youtube.com/..."
+              />
+            </div>
+            <div class="input-group">
+              <label for="video-duration">Duration (minutes)</label>
+              <input
+                type="number"
+                id="video-duration"
+                placeholder="Duration in minutes"
+              />
+            </div>
+            <button class="btn" id="add-video-btn">
+              <i class="fas fa-plus"></i> Add Video
+            </button>
+          </div>
+
+          <div class="add-video">
+            <h3><i class="fas fa-cog"></i> Manage Playlist</h3>
+            <button
+              class="btn"
+              id="save-playlist"
+              style="width: 100%; margin-bottom: 10px"
+            >
+              <i class="fas fa-save"></i> Save Playlist
+            </button>
+            <button
+              class="btn"
+              id="load-playlist"
+              style="
+                width: 100%;
+                background: linear-gradient(90deg, #2196f3, #21cbf3);
+              "
+            >
+              <i class="fas fa-upload"></i> Load Playlist
+            </button>
+          </div>
+        </div>
+
+        <div class="main-content">
+          <div class="filters">
+            <button class="filter-btn active" data-filter="all">
+              <i class="fas fa-list"></i> All
+            </button>
+            <button class="filter-btn" data-filter="watched">
+              <i class="fas fa-eye"></i> Watched
+            </button>
+            <button class="filter-btn" data-filter="unwatched">
+              <i class="fas fa-eye-slash"></i> Unwatched
+            </button>
+          </div>
+
+          <div class="videos-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const addVideoBtn = document.getElementById("add-video-btn");
+        const videosList = document.querySelector(".videos-list");
+
+        // Save & Load buttons
+        document
+          .getElementById("save-playlist")
+          .addEventListener("click", () => {
+            localStorage.setItem("playlist", videosList.innerHTML);
+            alert("Playlist saved!");
+          });
+
+        document
+          .getElementById("load-playlist")
+          .addEventListener("click", () => {
+            const saved = localStorage.getItem("playlist");
+            if (saved) {
+              videosList.innerHTML = saved;
+              updateStats();
+            } else {
+              alert("No saved playlist found.");
+            }
+          });
+
+        // Add video functionality
+        addVideoBtn.addEventListener("click", function () {
+          const title = document.getElementById("video-title").value.trim();
+          const url = document.getElementById("video-url").value.trim();
+          const duration = document
+            .getElementById("video-duration")
+            .value.trim();
+
+          const ytRegex =
+            /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
+
+          if (!title || !url || !duration) {
+            alert("Please fill all fields");
+            return;
+          }
+          if (!ytRegex.test(url)) {
+            alert("Please enter a valid YouTube URL");
+            return;
+          }
+
+          const newVideo = document.createElement("div");
+          newVideo.className = "video-item";
+          newVideo.setAttribute("data-url", url);
+          newVideo.innerHTML = `
+            <div class="video-thumb"><i class="fab fa-youtube"></i></div>
+            <div class="video-info">
+              <h3 class="video-title">${title}</h3>
+              <div class="video-details">
+                <span><i class="fas fa-clock"></i> ${duration} min</span>
+                <span><i class="fas fa-calendar"></i> Added: Just now</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress" style="width: 0%"></div>
+              </div>
+              <div class="video-actions">
+                <button class="action-btn"><i class="fas fa-eye"></i> Mark Watched</button>
+                <button class="action-btn"><i class="fas fa-link"></i> Open</button>
+                <button class="action-btn"><i class="fas fa-trash"></i> Remove</button>
+              </div>
+            </div>
+          `;
+
+          videosList.insertBefore(newVideo, videosList.firstChild);
+
+          document.getElementById("video-title").value = "";
+          document.getElementById("video-url").value = "";
+          document.getElementById("video-duration").value = "";
+
+          updateStats();
+        });
+
+        // Actions
+        document.addEventListener("click", function (e) {
+          if (e.target.closest(".action-btn")) {
+            const btn = e.target.closest(".action-btn");
+            const videoItem = btn.closest(".video-item");
+
+            if (btn.innerText.includes("Mark Watched")) {
+              videoItem.classList.add("watched");
+              btn.innerHTML = '<i class="fas fa-eye"></i> Watched';
+              videoItem.querySelector(".progress").style.width = "100%";
+              updateStats();
+            } else if (btn.innerText.includes("Remove")) {
+              if (confirm("Remove this video?")) {
+                videoItem.remove();
+                updateStats();
+              }
+            } else if (btn.innerText.includes("Open")) {
+              const url = videoItem.getAttribute("data-url");
+              window.open(url, "_blank");
+            }
+          }
+
+          // Filtering
+          if (e.target.closest(".filter-btn")) {
+            const filter = e.target.closest(".filter-btn").dataset.filter;
+            document
+              .querySelectorAll(".filter-btn")
+              .forEach((b) => b.classList.remove("active"));
+            e.target.closest(".filter-btn").classList.add("active");
+
+            document.querySelectorAll(".video-item").forEach((item) => {
+              if (filter === "all") {
+                item.style.display = "flex";
+              } else if (filter === "watched") {
+                item.style.display = item.classList.contains("watched")
+                  ? "flex"
+                  : "none";
+              } else if (filter === "unwatched") {
+                item.style.display = !item.classList.contains("watched")
+                  ? "flex"
+                  : "none";
+              }
+            });
+          }
+        });
+
+        // Update stats
+        function updateStats() {
+          const total = document.querySelectorAll(".video-item").length;
+          const watched = document.querySelectorAll(
+            ".video-item.watched"
+          ).length;
+          const unwatched = total - watched;
+          const percentage =
+            total > 0 ? Math.round((watched / total) * 100) : 0;
+
+          document.querySelectorAll(".stat-box .number")[0].textContent = total;
+          document.querySelectorAll(".stat-box .number")[1].textContent =
+            watched;
+          document.querySelectorAll(".stat-box .number")[2].textContent =
+            unwatched;
+          document.querySelectorAll(".stat-box .number")[3].textContent =
+            percentage + "%";
+        }
+      });
+    </script>
+  </body>
+</html>
